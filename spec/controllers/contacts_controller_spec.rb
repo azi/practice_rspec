@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'ContactsController' do
+describe ContactsController do
 
   describe 'GET #index' do
     context 'with params[:letter]' do
@@ -16,7 +16,7 @@ describe 'ContactsController' do
 
   describe 'GET #show' do
     it "assigns the requested contact to @contact" do
-      contact = create(:contact, firstname: 'Azi')
+      contact = create(:contact)
       get :show, id: contact
       expect(assigns(:contact)).to eq contact
     end
@@ -38,13 +38,34 @@ describe 'ContactsController' do
   end
 
   describe 'POST #create' do
+    before :each do
+      @phones = [
+        attributes_for(:phone),
+        attributes_for(:phone),
+        attributes_for(:phone)
+      ]
+    end
     context "with valid attributes" do
-      it "saves the new contact in the database"
-      it "redirects to contacts#show"
+      it "saves the new contact in the database" do
+        expect{
+          post :create, contact: attributes_for(:contact,
+                                               phones_attributes: @phones)
+        }.to change(Contact, :count).by(1)
+      end
+      it "redirects to contacts#show" do
+        post :create, contact: attributes_for(:contact,
+                                             phones_attributes: @phones)
+        expect(response).to redirect_to contact_path(assigns(:contact))
+      end
     end
 
     context "with invalid attributes" do
-      it "does not save the new contact in the database"
+      it "does not save the new contact in the database" do
+        expect{
+          post :create,
+            contact: attributes_for(:invalid_contact)
+        }.to_not change(Contact, :count)
+      end
       it "re-renders the :new template"
     end
   end
